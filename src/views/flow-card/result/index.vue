@@ -88,6 +88,7 @@ export default {
             flowExeDetailResults,
             consumption,
             cardNums,
+            quantity,
             settlementAmount
           }
         } = await getFileFlowResult({
@@ -109,7 +110,7 @@ export default {
             });
           });
           this.errorCode = errorCode;
-          this.title = ` [ ${batchName} ] 执行结果，执行时间为${beginTime} 到 ${endTime}，${errorMessage}`;
+          this.title = ` [ ${batchName} ] 执行结果，当前虚量：${quantity}，执行时间为${beginTime} 到 ${endTime}，${errorMessage}`;
         }
       } catch (err) {
         this.loading = false;

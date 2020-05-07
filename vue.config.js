@@ -8,6 +8,7 @@ function resolve(dir) {
 const name = defaultSettings.title || '管理系统' // 标题
 const port = process.env.port || process.env.npm_config_port || 83 // 端口
 module.exports = {
+  publicPath:'/',
   outputDir: 'dist',
   assetsDir: 'assets',
   lintOnSave: process.env.NODE_ENV === 'development',

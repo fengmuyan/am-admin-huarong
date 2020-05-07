@@ -1,3 +1,8 @@
 <template>
-  <div class="app-container">欢迎</div>
+  <div style="margin: 20px;">欢迎!</div>
 </template>
+
+<script>
+export default {
+}
+</script>

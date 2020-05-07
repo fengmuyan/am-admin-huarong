@@ -106,7 +106,7 @@
         :total="total"
         :page.sync="queryForm.pageNum"
         :limit.sync="queryForm.pageSize"
-        @pagination="pageGetList"
+        @pagination="getList"
       />
     </div>
 
@@ -186,9 +186,8 @@
     <el-dialog
       :title="titleUpload"
       :visible.sync="openUpload"
-      :close-on-click-modal="false"
       @close="clearValidateUpload"
-      width="890px"
+      width="620px"
     >
       <el-form
         ref="formUpload"
@@ -196,7 +195,6 @@
         :rules="formUploadRules"
         :inline="true"
         label-width="110px"
-        v-loading="loadingUpload"
       >
         <el-form-item label="批次名称" prop="batchName">
           <el-input
@@ -212,11 +210,18 @@
             <el-option label="不合并独立计算" value="N" />
           </el-select>
         </el-form-item>
-        <vue-upload ref="uploader"></vue-upload>
+        <el-form-item label="数据导入" prop="file" ref="uploadElement" v-if="fileShow">
+          <upload-file
+            @add-item="addItemFir"
+            @del-item="delItemFir"
+            ref="fileItemOne"
+            v-model="formUpload.file"
+          />
+        </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="openUpload = false">取 消</el-button>
-        <el-button type="primary" @click="submitForm('formUpload')">导入数据</el-button>
+        <el-button :loading="loadingUpload" type="primary" @click="submitForm('formUpload')">导入数据</el-button>
       </div>
     </el-dialog>
   </div>
@@ -235,13 +240,10 @@ import {
 } from "@/api/card";
 import minHeightMix from "@/mixins/minHeight";
 import UploadFile from "../components/UploadFile";
-import vueUpload from "@/components/Webuploader";
-
 export default {
   mixins: [minHeightMix],
   components: {
-    UploadFile,
-    vueUpload
+    UploadFile
   },
   data() {
     const validateQuantity = (rule, value, callback) => {
@@ -271,6 +273,7 @@ export default {
       },
       openFlow: false,
       openUpload: false,
+      fileShow: true,
       titleFlow: "资费方案计算",
       titleUpload: "导入流量数据",
       dateRange: [],
@@ -279,8 +282,9 @@ export default {
       flowGroupList: [], //套餐组列表
       multipleSelection: [], //选中套餐列表
       timer: null,
-      lock: false,
-      isListLoading: true,
+      haveDoing: [],
+      lockFile: false,
+      isGetLine: false,
       flowForm: {
         gid: undefined,
         flowSize: undefined,
@@ -312,6 +316,20 @@ export default {
       }
     };
   },
+  watch: {
+    haveDoing: {
+      deep: true,
+      handler(nVal, oVal) {
+        this._clearTimer();
+        if (oVal.length === 0 && nVal.length > 0) {
+          this.getFlowLine();
+        }
+        if (nVal.length === oVal.length) {
+          return false;
+        }
+      }
+    }
+  },
   filters: {
     initState(val) {
       if (Number(val.functionState) === 0) {
@@ -322,7 +340,7 @@ export default {
         }
       } else if (Number(val.functionState) === 1) {
         if (val.percentage === undefined || val.percentage === null) {
-          return "";
+          return "加载中...";
         } else {
           if (Number(val.percentage) === 0) {
             return "等待中";
@@ -333,11 +351,6 @@ export default {
       }
     }
   },
-  computed: {
-    uploader() {
-      return this.$refs.uploader;
-    }
-  },
   created() {
     this.getList();
   },
@@ -346,14 +359,10 @@ export default {
   },
   methods: {
     async getList() {
-      if (!this.lock) {
-        this.lock = true;
+      if (!this.lockFile) {
+        this.lockFile = true;
         try {
-          this._clearTimer();
-          this.timer = setTimeout(this.getList, 6000);
-          if (this.isListLoading) {
-            this.loading = true;
-          }
+          this.loading = true;
           const { _initParams, queryForm } = this;
           const {
             code,
@@ -369,49 +378,45 @@ export default {
               });
             });
             this.total = totalSize;
-            this.isListLoading = false;
-            const haveDoing = content
+            const isActData = content
               .filter(item => {
                 return Number(item.functionState) === 1;
               })
               .map(v => {
                 return v.gid;
               });
-            if (haveDoing.length !== 0) {
-              try {
-                const { data, code } = await getCardOperateLine({
-                  gids: haveDoing.join(",")
-                });
-                if (code === 200) {
-                  const newList = this.fileFlowList.map(v => {
-                    const result = data.find(m => {
-                      return m.gid === v.gid;
-                    });
-                    return Object.assign(v, {
-                      percentage: result ? result.percentage : null
-                    });
-                  });
-                  this.fileFlowList = newList;
-                  this.lock = false;
-                }
-              } catch (err) {
-                console.log(err);
-              }
-            } else {
-              this.lock = false;
-            }
+            this.haveDoing = [...new Set([...this.haveDoing, ...isActData])];
+            this.lockFile = false;
           }
         } catch (err) {
           this.loading = false;
+          this.lockFile = false;
           console.log(err);
         }
       } else {
         return false;
       }
     },
-    pageGetList() {
-      this.isListLoading = true;
-      this.getList();
+    async getFlowLine() {
+      const timer = setTimeout(this.getFlowLine, 6000);
+      try {
+        const { data, code } = await getCardOperateLine({
+          gids: this.haveDoing.join(",")
+        });
+        if (code === 200) {
+          const newList = this.fileFlowList.map(v => {
+            const result = data.find(m => {
+              return m.gid === v.gid;
+            });
+            return Object.assign(v, {
+              percentage: result ? result.percentage : null
+            });
+          });
+          this.fileFlowList = newList;
+        }
+      } catch (err) {
+        console.log(err);
+      }
     },
     async getFlowList() {
       try {
@@ -497,7 +502,6 @@ export default {
           } else {
             time = 300;
           }
-          this.isListLoading = true;
           setTimeout(this.getList, time);
           this.loading = false;
         }
@@ -513,7 +517,6 @@ export default {
       this.$refs.flowForm.resetFields();
     },
     handleQuery() {
-      this.isListLoading = true;
       this.queryForm.pageNum = 1;
       this.getList();
     },
@@ -539,8 +542,11 @@ export default {
       });
     },
     async handleAdd() {
+      this.fileShow = false;
       this.resetUploadForm();
+      await this.$nextTick();
       this.openUpload = true;
+      this.fileShow = true;
     },
     clearValidateUpload() {
       this.$refs.formUpload.resetFields();
@@ -548,47 +554,25 @@ export default {
     submitForm(formName) {
       this.$refs[formName].validate(async valid => {
         if (valid) {
-          const fileList = this.$refs.uploader.fileList;
-          const isLoadingUpload = fileList.findIndex(item => {
-            return Boolean(item.blocks);
+          const fileList = this.$refs.fileItemOne.fileList;
+          let formData = new FormData();
+          formData.append("batchName", this.formUpload.batchName);
+          formData.append("isMerge", this.formUpload.isMerge);
+          fileList.forEach((item, index) => {
+            formData.append(`file${index + 1}`, item.file);
           });
-          if (fileList.length !== 0 && isLoadingUpload === -1) {
-            const files = fileList.map(v => {
-              return { md5: v.md5, name: v.name };
-            });
-            const { isMerge, batchName } = this.formUpload;
-            try {
-              this.loadingUpload = true;
-              const { code } = await handelUploadFlow({
-                isMerge,
-                batchName,
-                files: JSON.stringify(files),
-                sid: fileList[0].sid
-              });
-              this.loadingUpload = false;
-              this.openUpload = false;
-              if (code === 200) {
-                this.msgSuccess("操作成功");
-                this.$refs.uploader.reset();
-                this.$refs.uploader.fileList = [];
-                this.$refs.uploader.S4();
-                this.isListLoading = true;
-                
-                setTimeout(this.getList, 300);
-              }
-            } catch (err) {
-              this.loadingUpload = false;
-              console.log(err);
+          try {
+            this.loadingUpload = true;
+            const { code } = await handelUploadFlow(formData);
+            this.loadingUpload = false;
+            this.openUpload = false;
+            if (code === 200) {
+              this.msgSuccess("操作成功");
+              this.getList();
             }
-          } else {
-            this.$confirm("文件必须上传完成且不能为空！", "系统提示", {
-              confirmButtonText: "确定",
-              cancelButtonText: "取消",
-              type: "warning",
-              customClass: "el-message-box-wran"
-            })
-              .then(async () => {})
-              .catch(err => {});
+          } catch (err) {
+            this.loadingUpload = false;
+            console.log(err);
           }
         } else {
           this.loadingFile = false;
@@ -608,7 +592,6 @@ export default {
             const { code } = await handelDelFileFlow({ gid: item.gid });
             this.loading = false;
             if (code === 200) {
-              this.isListLoading = true;
               this.msgSuccess("删除成功");
               this.getList();
             }
@@ -632,6 +615,13 @@ export default {
       this.$router.push({
         path: `/flow-card/result/${item.gid}`
       });
+    },
+    addItemFir(val) {
+      this.formUpload.file = val;
+      this.$refs["uploadElement"].clearValidate();
+    },
+    delItemFir(val) {
+      this.formUpload.file = undefined;
     },
     handleSelectionChange(val) {
       this.multipleSelection = val;

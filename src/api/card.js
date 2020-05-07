@@ -51,8 +51,7 @@ export function getFileFlowList(data = {}) {
 }
 
 // 导入数据接口
-export function handelUploadFlow(formData) {
-  const data = { formData, $_isFormData: true }
+export function handelUploadFlow(data = {}) {
   return request({
     url: '/fulcrum/flowMeal/importFlowCardExcel',
     method: 'post',
@@ -87,7 +86,86 @@ export function handelDownloadResult(data = {}) {
   })
 }
 
+//套餐组列表
+export function getCardGroupList(data = {}) {
+  return request({
+    url: '/fulcrum/flowMealGroup/list',
+    method: 'post',
+    data
+  })
+}
 
+//接口套餐组保存初始化
+export function getFlowCardList(data = {}) {
+  return request({
+    url: '/fulcrum/flowMealGroup/saveFlowMealGroupInit',
+    method: 'post',
+    data
+  })
+}
+
+//新增套餐组
+export function handelAddCardGroup(data = {}) {
+  return request({
+    url: '/fulcrum/flowMealGroup/saveFlowMealGroup',
+    method: 'post',
+    data
+  })
+}
+
+//删除套餐组
+export function handelDelCardGroup(data = {}) {
+  return request({
+    url: '/fulcrum/flowMealGroup/delFlowMealGroup',
+    method: 'post',
+    data
+  })
+}
+
+//套餐组明细
+export function getCardGroupDetail(data = {}) {
+  return request({
+    url: '/fulcrum/flowMealGroup/detailsList',
+    method: 'post',
+    data
+  })
+}
+
+//套餐组
+export function getCardGroupAllList(data = {}) {
+  return request({
+    url: '/fulcrum/flowMealGroup/allList',
+    method: 'post',
+    data
+  })
+}
+
+//获取执行进度
+export function getCardOperateLine(data = {}) {
+  return request({
+    url: '/fulcrum/flowMeal/exeRate',
+    method: 'post',
+    data
+  })
+}
+
+//文件校验
+export function fileUploadCheck(data = {}) {
+  return request({
+    url: '/fulcrum/uplaodFile/checkChunk',
+    method: 'post',
+    data
+  })
+}
+
+//文件合并
+export function fileUploadMerge(data = {}) {
+  return request({
+    url: '/fulcrum/uplaodFile/mergeChunks',
+    method: 'post',
+    data
+  })
+}
 
 
 

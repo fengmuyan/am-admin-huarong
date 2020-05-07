@@ -301,6 +301,15 @@
   .suc-color {
     color: #14cfa0;
   }
+
+  .done-color {
+    color: #ff8647;
+    opacity: 0.7;
+  }
+
+  .doing-color {
+    color: #14cfa0;
+  }
 }
 
 .form-p {
@@ -542,7 +551,8 @@
 
   .el-loading-mask {
     width: 86.5%;
-    .el-loading-spinner{
+
+    .el-loading-spinner {
       left: 7%;
     }
   }
@@ -637,10 +647,12 @@
         margin-left: 18px;
         margin-top: 20px;
         color: rgb(100, 100, 100);
+
         dt {
           line-height: 20px;
 
         }
+
         dd {
           margin-left: 0;
           line-height: 22px;
@@ -922,5 +934,137 @@
 .table-result {
   td {
     border-right: 1px solid #EBEEF5;
+  }
+}
+
+.page {
+  $h-row: 50px;
+  padding: 20px;
+  padding-top: 0;
+
+  .webuploader-element-invisible {
+    display: none;
+  }
+
+  .webuploader-container {
+    position: relative;
+  }
+
+  .webuploader-element-invisible {
+    position: absolute !important;
+    clip: rect(1px 1px 1px 1px);
+    clip: rect(1px, 1px, 1px, 1px);
+  }
+
+  .webuploader-pick {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+    background: #8891c5;
+    padding: 10px 15px !important;
+    color: #fff;
+    text-align: center;
+    border-radius: 3px;
+    overflow: hidden;
+    font-size: 14px;
+  }
+
+  .webuploader-pick-hover {
+    background: #8891c5;
+  }
+
+  .webuploader-pick-disable {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+
+  .file-panel {
+    margin-top: 15px;
+    width: 800px;
+    box-shadow: 0 2px 12px 1px rgba(0, 0, 0, 0.1);
+
+    >h2 {
+      margin: 0;
+      font-size: 15px;
+      height: 40px;
+      line-height: 40px;
+      padding: 0 10px;
+      border-radius: 4px 4px 0 0;
+      border-bottom: 1px solid #ccc;
+      background-color: #fff;
+    }
+
+    .file-list {
+      position: relative;
+      height: 350px;
+      overflow-y: auto;
+      background-color: rgb(250, 250, 250);
+    }
+
+    .file-item {
+      position: relative;
+      margin: 15px;
+      height: $h-row;
+      line-height: 46px;
+      padding: 0 10px;
+      border-bottom: 1px solid #ccc;
+      background-color: #fff;
+      z-index: 1;
+
+      >li {
+        display: inline-block;
+      }
+    }
+
+    .file-type {
+      font-size: 23px;
+      vertical-align: -3px;
+    }
+
+    .file-name {
+      width: 40%;
+      margin-left: 10px;
+    }
+
+    .file-size {
+      width: 20%;
+    }
+
+    .file-status {
+      width: 20%;
+    }
+
+    .file-operate {
+      width: 12%;
+      text-align: right;
+
+      >a {
+        cursor: pointer;
+        color: #666;
+        font-size: 25px;
+
+        &:hover {
+          color: #ff4081;
+        }
+      }
+    }
+
+    .progress {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: $h-row - 1;
+      width: 0;
+      background-color: #e2edfe;
+      z-index: -1;
+    }
+
+    .no-file {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 16px;
+    }
   }
 }

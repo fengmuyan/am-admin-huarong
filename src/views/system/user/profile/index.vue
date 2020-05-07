@@ -19,7 +19,7 @@
                 <svg-icon icon-class="phone" />手机号码
                 <div class="pull-right">{{ user.phonenumber }}</div>
               </li>
-              <li class="list-group-item">
+              <li class="list-group-item" v-if="user.dept">
                 <svg-icon icon-class="tree" />所属公司
                 <div class="pull-right">{{ user.dept.deptName }}</div>
               </li>
